@@ -42,6 +42,12 @@ Catalog (display-only map — booking will not trust it):
 - `GET /matches/{id}`
 - `GET /matches/{id}/map`  (Redis cache, 3s TTL)
 
+Assigned-seat holds (pessimistic: Redis `SET NX` then a short `SELECT … FOR UPDATE`; 10-minute TTL, no lock held during payment):
+
+- `POST /matches/{id}/holds` with header `Idempotency-Key`
+- `GET /holds/{id}`
+
+
 
 ## Architecture
 
