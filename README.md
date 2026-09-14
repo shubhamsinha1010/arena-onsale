@@ -65,7 +65,7 @@ Checkout saga (charge **outside** any DB lock; optimistic `HELD → SOLD`; refun
 
 - `POST /checkout` with `hold_id` or `ga_reservation_id` and `Idempotency-Key`
 - `GET /orders/{id}`
-- `uv run python -m arena_onsale.worker` expires abandoned holds (`FOR UPDATE SKIP LOCKED`)
+- `uv run python -m arena_onsale.worker` expires abandoned holds and publishes email/QR outbox rows (`FOR UPDATE SKIP LOCKED`)
 
 ## Load (1 million in the room)
 
@@ -83,7 +83,7 @@ uv sync --group load
 uv run locust -f loadtests/locustfile.py --host http://127.0.0.1:8000
 ```
 
-Most Locust users only join and poll. A small cohort browses `/matches` after they get an `Admission-Token`.
+Most Locust users only join and poll. A thin admitted cohort browses `/matches`, reserves one GA ticket, and checks out once. HTTP 409 (sold out / finalize conflict) is treated as success — that is the product working.
 
 
 ## Architecture
