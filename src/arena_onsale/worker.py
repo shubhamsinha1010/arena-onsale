@@ -36,10 +36,13 @@ async def run_once(runtime: Runtime) -> int:
             now=now,
             batch_size=runtime.settings.worker_batch_size,
         )
+        admitted = await runtime.waiting_room.admit_tick()
         await session.commit()
         if holds or ga:
             logger.info("expired %s assigned holds and %s ga reservations", holds, ga)
-        return holds + ga
+        if admitted:
+            logger.info("admitted %s shoppers from the waiting room", admitted)
+        return holds + ga + admitted
 
 
 async def main() -> None:

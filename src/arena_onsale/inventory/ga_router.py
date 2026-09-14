@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from arena_onsale.api.admission import require_admission
 from arena_onsale.api.deps import get_runtime, get_session
 from arena_onsale.inventory.errors import (
     GaNotFoundError,
@@ -16,7 +17,7 @@ from arena_onsale.inventory.ga_service import GaReservationService, ga_service
 from arena_onsale.inventory.models import GaReservation
 from arena_onsale.shared.runtime import Runtime
 
-router = APIRouter(tags=["ga"])
+router = APIRouter(tags=["ga"], dependencies=[Depends(require_admission)])
 
 
 def get_ga_service(

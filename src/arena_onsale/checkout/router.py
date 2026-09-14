@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from arena_onsale.api.admission import require_admission
 from arena_onsale.api.deps import get_runtime, get_session
 from arena_onsale.checkout.errors import (
     FinalizeFailedError,
@@ -16,7 +17,7 @@ from arena_onsale.checkout.schemas import CheckoutRequest, CheckoutResponse
 from arena_onsale.checkout.service import CheckoutService, checkout_service
 from arena_onsale.shared.runtime import Runtime
 
-router = APIRouter(tags=["checkout"])
+router = APIRouter(tags=["checkout"], dependencies=[Depends(require_admission)])
 
 
 def get_checkout_service(
