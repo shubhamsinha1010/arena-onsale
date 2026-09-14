@@ -47,6 +47,11 @@ Assigned-seat holds (pessimistic: Redis `SET NX` then a short `SELECT … FOR UP
 - `POST /matches/{id}/holds` with header `Idempotency-Key`
 - `GET /holds/{id}`
 
+General admission (optimistic `version` counter, 3 attempts, 50–200ms jitter):
+
+- `POST /matches/{id}/ga-reservations` with header `Idempotency-Key`
+- `GET /ga-reservations/{id}`
+
 
 
 ## Architecture

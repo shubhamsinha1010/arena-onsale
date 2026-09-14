@@ -11,6 +11,7 @@ A Cup26 final has on the order of 80,000 seats and a million people at the door.
 Default knobs (env-overridable):
 
 - Hold TTL: **10 minutes**
+- GA optimistic retries: **3** with **50–200ms** jitter
 - Waiting-room admit rate: **50,000 / minute** (traffic shaping, not inventory)
 - Concurrent checkout bulkhead: **3,000**
 
@@ -47,4 +48,4 @@ Each uvicorn worker owns a small SQLAlchemy/asyncpg pool (`DB_POOL_SIZE` + `DB_M
 
 ## What comes next
 
-Catalog and seat map, assigned-seat holds, GA inventory, waiting room, checkout saga, expiry worker, then a load harness that puts one million arrivals in the room and a few thousand through checkout.
+Catalog and seat map, assigned-seat holds, and GA inventory are in. Next: waiting room, checkout saga, expiry worker, then a load harness that puts one million arrivals in the room and a few thousand through checkout.

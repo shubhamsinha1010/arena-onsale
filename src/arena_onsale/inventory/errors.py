@@ -9,3 +9,18 @@ class SeatUnavailableError(Exception):
 
 class HoldConflictError(Exception):
     """Idempotency key reused by a different session."""
+
+
+class GaUnavailableError(Exception):
+    """GA pool could not satisfy the request after optimistic retries."""
+
+
+class GaNotFoundError(Exception):
+    """No general-admission pool for this match."""
+
+
+class GaQuantityError(Exception):
+    def __init__(self, quantity: int, maximum: int) -> None:
+        self.quantity = quantity
+        self.maximum = maximum
+        super().__init__("quantity is outside the allowed range")

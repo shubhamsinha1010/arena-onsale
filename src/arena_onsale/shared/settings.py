@@ -34,6 +34,10 @@ class Settings(BaseSettings):
 
     hold_ttl_seconds: int = 600
     seat_map_ttl_seconds: int = 3
+    ga_max_attempts: int = 3
+    ga_retry_min_ms: int = 50
+    ga_retry_max_ms: int = 200
+    ga_max_quantity: int = 8
     waiting_room_admit_per_minute: int = 50_000
     checkout_concurrency_limit: int = 3_000
 
