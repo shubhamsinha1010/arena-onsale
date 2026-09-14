@@ -4,6 +4,7 @@ from alembic import context
 from sqlalchemy.engine import Connection
 
 from arena_onsale.catalog import models as catalog_models
+from arena_onsale.inventory import models as inventory_models
 from arena_onsale.shared.db import create_engine
 from arena_onsale.shared.persistence import Base
 from arena_onsale.shared.settings import get_settings
