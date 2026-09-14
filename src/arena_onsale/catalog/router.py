@@ -4,13 +4,18 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from arena_onsale.api.admission import require_admission
 from arena_onsale.api.deps import get_runtime, get_session
 from arena_onsale.catalog.models import Match
 from arena_onsale.catalog.schemas import GaSummary, MatchSummary, SeatMapResponse
 from arena_onsale.catalog.service import CatalogService
 from arena_onsale.shared.runtime import Runtime
 
-router = APIRouter(prefix="/matches", tags=["catalog"])
+router = APIRouter(
+    prefix="/matches",
+    tags=["catalog"],
+    dependencies=[Depends(require_admission)],
+)
 
 
 def _service(

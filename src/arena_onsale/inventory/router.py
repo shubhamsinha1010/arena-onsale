@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Header, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from arena_onsale.api.admission import require_admission
 from arena_onsale.api.deps import get_runtime, get_session
 from arena_onsale.inventory.errors import HoldConflictError, SeatUnavailableError
 from arena_onsale.inventory.locking import RedisSeatLockGate
@@ -12,7 +13,7 @@ from arena_onsale.inventory.schemas import CreateHoldRequest, HeldSeat, HoldResp
 from arena_onsale.inventory.service import HoldService
 from arena_onsale.shared.runtime import Runtime
 
-router = APIRouter(tags=["holds"])
+router = APIRouter(tags=["holds"], dependencies=[Depends(require_admission)])
 
 
 def _service(

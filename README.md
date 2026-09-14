@@ -34,7 +34,16 @@ Application traffic goes through **PgBouncer** (`localhost:6432`, transaction po
 ```bash
 make migrate
 make seed          # Cup26 Final, small layout (88 assigned + 40 GA)
+make worker        # expire holds + admit the waiting room
 ```
+
+Waiting room (no inventory lock — this is the 1M-user valve):
+
+- `POST /waiting-room/join` `{ "visitor_id": "..." }`
+- `GET /waiting-room/status/{visitor_id}`
+- `GET /waiting-room/stats` — queued vs admitted vs bulkhead
+
+Catalog, holds, GA, and checkout require header `Admission-Token` from a successful join.
 
 Catalog (display-only map — booking will not trust it):
 

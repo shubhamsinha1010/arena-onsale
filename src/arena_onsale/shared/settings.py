@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     ticket_price_cents: int = 15_000
     waiting_room_admit_per_minute: int = 50_000
     checkout_concurrency_limit: int = 3_000
+    shopping_ttl_seconds: int = 900
     worker_poll_seconds: float = 2.0
     worker_batch_size: int = 50
 

@@ -13,6 +13,7 @@ from arena_onsale.inventory.router import router as hold_router
 from arena_onsale.shared.metrics import CONTENT_TYPE_LATEST, render_metrics
 from arena_onsale.shared.runtime import build_runtime
 from arena_onsale.shared.settings import Settings, get_settings
+from arena_onsale.waiting_room.router import router as waiting_room_router
 
 
 @asynccontextmanager
@@ -35,6 +36,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     application.state.settings = resolved
     application.include_router(health_router)
+    application.include_router(waiting_room_router)
     application.include_router(catalog_router)
     application.include_router(hold_router)
     application.include_router(ga_router)
