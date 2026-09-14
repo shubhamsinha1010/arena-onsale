@@ -52,6 +52,12 @@ General admission (optimistic `version` counter, 3 attempts, 50–200ms jitter):
 - `POST /matches/{id}/ga-reservations` with header `Idempotency-Key`
 - `GET /ga-reservations/{id}`
 
+Checkout saga (charge **outside** any DB lock; optimistic `HELD → SOLD`; refund if that write loses):
+
+- `POST /checkout` with `hold_id` or `ga_reservation_id` and `Idempotency-Key`
+- `GET /orders/{id}`
+- `uv run python -m arena_onsale.worker` expires abandoned holds (`FOR UPDATE SKIP LOCKED`)
+
 
 
 ## Architecture

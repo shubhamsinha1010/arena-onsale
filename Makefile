@@ -18,6 +18,9 @@ migrate: up
 seed: migrate
 	uv run python -m arena_onsale.catalog --layout small
 
+worker: up
+	uv run python -m arena_onsale.worker
+
 test:
 	uv run pytest
 

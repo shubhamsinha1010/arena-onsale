@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
+from arena_onsale.checkout.psp import MockPsp, PaymentProvider
 from arena_onsale.shared.clock import Clock, SystemClock
 from arena_onsale.shared.db import create_engine, create_session_factory
 from arena_onsale.shared.metrics import PoolCollector
@@ -17,6 +18,7 @@ class Runtime:
     redis: RedisClient
     clock: Clock
     pool_collector: PoolCollector
+    psp: PaymentProvider
 
     async def aclose(self) -> None:
         await self.redis.aclose()
@@ -32,4 +34,5 @@ def build_runtime(settings: Settings) -> Runtime:
         redis=create_redis(settings),
         clock=SystemClock(),
         pool_collector=PoolCollector(),
+        psp=MockPsp(),
     )
