@@ -1,4 +1,4 @@
-"""Hold and GA reservation expiry worker.
+"""Hold expiry, waiting-room admits, and outbox publish.
 
 Usage:
     uv run python -m arena_onsale.worker
@@ -11,6 +11,7 @@ import logging
 
 from arena_onsale.checkout.expiry import expire_ga, expire_holds
 from arena_onsale.checkout.finalizer import SqlInventoryFinalizer
+from arena_onsale.checkout.outbox import LogTicketNotifier, publish_outbox
 from arena_onsale.inventory.locking import RedisSeatLockGate
 from arena_onsale.shared.runtime import Runtime, build_runtime
 from arena_onsale.shared.settings import get_settings
@@ -36,13 +37,21 @@ async def run_once(runtime: Runtime) -> int:
             now=now,
             batch_size=runtime.settings.worker_batch_size,
         )
+        mailed = await publish_outbox(
+            session,
+            LogTicketNotifier(),
+            runtime.clock,
+            batch_size=runtime.settings.worker_batch_size,
+        )
         admitted = await runtime.waiting_room.admit_tick()
         await session.commit()
         if holds or ga:
             logger.info("expired %s assigned holds and %s ga reservations", holds, ga)
+        if mailed:
+            logger.info("published %s outbox events", mailed)
         if admitted:
             logger.info("admitted %s shoppers from the waiting room", admitted)
-        return holds + ga + admitted
+        return holds + ga + mailed + admitted
 
 
 async def main() -> None:
@@ -54,7 +63,7 @@ async def main() -> None:
             try:
                 await run_once(runtime)
             except Exception:
-                logger.exception("expiry pass failed")
+                logger.exception("worker pass failed")
             await asyncio.sleep(settings.worker_poll_seconds)
     finally:
         await runtime.aclose()

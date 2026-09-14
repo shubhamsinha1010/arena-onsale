@@ -49,8 +49,12 @@ Each uvicorn worker owns a small SQLAlchemy/asyncpg pool (`DB_POOL_SIZE` + `DB_M
 ## Load harness
 
 - `python -m arena_onsale.load.flood` reserves a score range with `INCRBY` on `waiting:onsale:seq`, then `ZADD NX` in batches of 5,000. HTTP join is the slow path; the flooder is how a million fans appear in the room without a million HTTP connections.
-- Locust (`loadtests/locustfile.py`, optional `[dependency-groups] load`) is the shopper mix: mostly queue polling, a thin admitted browse. Caption a run as **1 million in the room, N admitted, zero oversell** — never as a million concurrent users at checkout.
+- Locust (`loadtests/locustfile.py`, optional `[dependency-groups] load`) is the shopper mix: mostly queue polling, a thin admitted GA reserve + checkout. Caption a run as **1 million in the room, N admitted, zero oversell** — never as a million concurrent users at checkout.
+
+## Outbox
+
+Checkout writes `TicketConfirmed` or `FinalizeFailed` in the same transaction as the order. The worker publishes those rows with `FOR UPDATE SKIP LOCKED` and a log notifier that stands in for email/QR. Delivery is at-least-once. Kafka is optional later; it is not required to prove the saga.
 
 ## What comes next
 
-The booking path, waiting room, and load harness are in. Optional later: a lottery admit strategy, a real CDN in front of the room, Kafka instead of outbox + Redis, k8s, a seat-map UI.
+The booking path, waiting room, load harness, and outbox publisher are in. Optional later: a lottery admit strategy, a real CDN in front of the room, Kafka instead of the log notifier, k8s, a seat-map UI.

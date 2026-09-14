@@ -1,4 +1,4 @@
-"""Locust personas for admitted vs queued fans.
+"""Locust personas for queued fans vs the admitted sliver that actually books.
 
 Install the optional load group, start the API, then:
 
@@ -48,7 +48,7 @@ class WaitingFan(HttpUser):
 
 
 class AdmittedShopper(HttpUser):
-    """The small cohort that made it through the bulkhead — browse only here."""
+    """One GA reserve + checkout per admitted user. 409 sold-out is success."""
 
     wait_time = between(0.5, 2.0)
     weight = 1
@@ -56,6 +56,7 @@ class AdmittedShopper(HttpUser):
     def on_start(self) -> None:
         self.visitor_id = str(uuid.uuid4())
         self.token: str | None = None
+        self.bought = False
         response = self.client.post(
             "/waiting-room/join", json={"visitor_id": self.visitor_id}, name="join"
         )
@@ -75,8 +76,41 @@ class AdmittedShopper(HttpUser):
                 if body.get("state") == "admitted":
                     self.token = body.get("token")
             return
-        self.client.get(
-            "/matches",
-            headers={"Admission-Token": self.token},
-            name="browse",
-        )
+        headers = {"Admission-Token": self.token}
+        matches = self.client.get("/matches", headers=headers, name="browse")
+        if self.bought or matches.status_code != 200:
+            return
+        catalog = matches.json()
+        if not catalog:
+            return
+        match_id = catalog[0]["id"]
+        reservation_id = None
+        with self.client.post(
+            f"/matches/{match_id}/ga-reservations",
+            json={"session_id": self.visitor_id, "quantity": 1},
+            headers={**headers, "Idempotency-Key": str(uuid.uuid4())},
+            name="ga-reserve",
+            catch_response=True,
+        ) as response:
+            if response.status_code in {200, 201}:
+                reservation_id = response.json()["id"]
+                response.success()
+            elif response.status_code == 409:
+                response.success()
+                self.bought = True
+                return
+            else:
+                response.failure(f"ga-reserve {response.status_code}")
+                return
+        with self.client.post(
+            "/checkout",
+            json={"session_id": self.visitor_id, "ga_reservation_id": reservation_id},
+            headers={**headers, "Idempotency-Key": str(uuid.uuid4())},
+            name="checkout",
+            catch_response=True,
+        ) as response:
+            if response.status_code in {200, 201, 402, 409}:
+                response.success()
+            else:
+                response.failure(f"checkout {response.status_code}")
+        self.bought = True
