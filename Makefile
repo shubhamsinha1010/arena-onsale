@@ -12,6 +12,12 @@ logs:
 run: up
 	uv run uvicorn arena_onsale.api.app:app --reload --port 8000
 
+migrate: up
+	uv run alembic upgrade head
+
+seed: migrate
+	uv run python -m arena_onsale.catalog --layout small
+
 test:
 	uv run pytest
 
