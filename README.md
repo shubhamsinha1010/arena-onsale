@@ -31,6 +31,18 @@ make lint
 
 Application traffic goes through **PgBouncer** (`localhost:6432`, transaction pooling). Alembic talks to Postgres on `localhost:5432` so migrations can use prepared statements.
 
+```bash
+make migrate
+make seed          # Cup26 Final, small layout (88 assigned + 40 GA)
+```
+
+Catalog (display-only map — booking will not trust it):
+
+- `GET /matches`
+- `GET /matches/{id}`
+- `GET /matches/{id}/map`  (Redis cache, 3s TTL)
+
+
 ## Architecture
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the hybrid locking model this codebase implements.
