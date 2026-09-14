@@ -7,6 +7,7 @@ from fastapi.responses import Response
 from arena_onsale.api.deps import get_runtime
 from arena_onsale.api.health import router as health_router
 from arena_onsale.catalog.router import router as catalog_router
+from arena_onsale.checkout.router import router as checkout_router
 from arena_onsale.inventory.ga_router import router as ga_router
 from arena_onsale.inventory.router import router as hold_router
 from arena_onsale.shared.metrics import CONTENT_TYPE_LATEST, render_metrics
@@ -37,6 +38,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(catalog_router)
     application.include_router(hold_router)
     application.include_router(ga_router)
+    application.include_router(checkout_router)
 
     @application.get("/metrics", include_in_schema=False)
     async def metrics(request: Request) -> Response:

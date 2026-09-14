@@ -38,8 +38,11 @@ class Settings(BaseSettings):
     ga_retry_min_ms: int = 50
     ga_retry_max_ms: int = 200
     ga_max_quantity: int = 8
+    ticket_price_cents: int = 15_000
     waiting_room_admit_per_minute: int = 50_000
     checkout_concurrency_limit: int = 3_000
+    worker_poll_seconds: float = 2.0
+    worker_batch_size: int = 50
 
 
 @lru_cache(maxsize=1)
