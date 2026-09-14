@@ -44,8 +44,13 @@ Default knobs (env-overridable):
 
 Each uvicorn worker owns a small SQLAlchemy/asyncpg pool (`DB_POOL_SIZE` + `DB_MAX_OVERFLOW`). PgBouncer multiplexes those onto Postgres in **transaction** mode. The app disables asyncpg’s prepared-statement cache (`statement_cache_size=0`) so statements cannot leak across borrowed connections.
 
-`/health/ready` and `/metrics` expose in-process pool occupancy. That is how we will show pool starvation in load tests: admit too many shoppers on purpose, then tighten the waiting room.
+`/health/ready` and `/metrics` expose in-process pool occupancy. That is how we show pool starvation in load tests: admit too many shoppers on purpose, then tighten the waiting room.
+
+## Load harness
+
+- `python -m arena_onsale.load.flood` reserves a score range with `INCRBY` on `waiting:onsale:seq`, then `ZADD NX` in batches of 5,000. HTTP join is the slow path; the flooder is how a million fans appear in the room without a million HTTP connections.
+- Locust (`loadtests/locustfile.py`, optional `[dependency-groups] load`) is the shopper mix: mostly queue polling, a thin admitted browse. Caption a run as **1 million in the room, N admitted, zero oversell** — never as a million concurrent users at checkout.
 
 ## What comes next
 
-Catalog, assigned-seat holds, GA inventory, checkout, and the waiting room are in. Next: a load harness that puts one million arrivals in the room and a few thousand through checkout.
+The booking path, waiting room, and load harness are in. Optional later: a lottery admit strategy, a real CDN in front of the room, Kafka instead of outbox + Redis, k8s, a seat-map UI.

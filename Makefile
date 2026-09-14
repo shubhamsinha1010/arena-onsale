@@ -1,4 +1,4 @@
-.PHONY: up down logs run test lint fmt
+.PHONY: up down logs run test lint fmt flood
 
 up:
 	docker compose up -d postgres redis pgbouncer
@@ -20,6 +20,9 @@ seed: migrate
 
 worker: up
 	uv run python -m arena_onsale.worker
+
+flood: up
+	uv run python -m arena_onsale.load.flood --count 1000000
 
 test:
 	uv run pytest

@@ -67,6 +67,23 @@ Checkout saga (charge **outside** any DB lock; optimistic `HELD → SOLD`; refun
 - `GET /orders/{id}`
 - `uv run python -m arena_onsale.worker` expires abandoned holds (`FOR UPDATE SKIP LOCKED`)
 
+## Load (1 million in the room)
+
+This is not “one million concurrent checkouts”. It is one million arrivals sitting in Redis, a few thousand admitted, and **zero oversell**.
+
+```bash
+make flood         # batched ZADD into the waiting-room queue
+make worker        # admit at 50k/min into the 3,000 shopper bulkhead
+```
+
+Shopper traffic (optional Locust, not required for CI):
+
+```bash
+uv sync --group load
+uv run locust -f loadtests/locustfile.py --host http://127.0.0.1:8000
+```
+
+Most Locust users only join and poll. A small cohort browses `/matches` after they get an `Admission-Token`.
 
 
 ## Architecture
